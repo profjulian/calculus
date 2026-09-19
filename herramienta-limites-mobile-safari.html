@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="theme-color" content="#702082">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Sustitución directa de límites</title>
+</head>
+<body>
+<div id="limitToolApp" class="lt-wrapper">
+
+  <div class="lt-card">
+
+    <h2>Sustitución directa de límites - Prof. Julian 😎</h2>
+
+    <p class="lt-intro">
+      Escribí una función en \(x\), indicá el valor al que tiende \(x\), y la herramienta mostrará la sustitución directa con resaltado.
+    </p>
+
+    <div class="lt-input-card">
+
+      <label>Función:</label>
+      <math-field id="ltFunction" math-virtual-keyboard-policy="auto" aria-label="Función matemática">x^2+6x-5</math-field>
+
+      <label>Valor al que tiende \(x\):</label>
+      <math-field id="ltValue" math-virtual-keyboard-policy="auto" aria-label="Valor al que tiende x">\frac{2}{7}</math-field>
+
+      <div class="lt-buttons">
+        <button onclick="ltCalculate()">Calcular</button>
+        <button class="lt-secondary" onclick="ltClear()">Limpiar</button>
+      </div>
+
+    </div>
+
+    <div id="ltPreview" class="lt-preview">
+      Vista previa pendiente.
+    </div>
+
+    <div id="ltResult" class="lt-result">
+      El resultado aparecerá aquí.
+    </div>
+
+  </div>
+
+</div>
+
+<style>
+  .lt-wrapper {
+    max-width: 980px;
+    margin: 25px auto;
+    padding: 28px;
+    border-radius: 32px;
+    background:
+      radial-gradient(circle at top left, rgba(255,255,255,.95), rgba(247,232,255,.78), rgba(112,32,130,.20)),
+      linear-gradient(135deg, #fff7fb, #f8e9ff, #ffffff);
+    box-shadow: 0 20px 55px rgba(112,32,130,.24);
+    font-family: Helvetica, Arial, sans-serif;
+  }
+
+  .lt-card {
+    background: rgba(255,255,255,.82);
+    border: 1px solid rgba(112,32,130,.20);
+    border-radius: 28px;
+    padding: 28px;
+    color: #702082;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.85),
+      0 12px 32px rgba(112,32,130,.13);
+  }
+
+  .lt-card h2 {
+    text-align: center;
+    margin: 0 0 12px 0;
+    font-size: 30px;
+    color: #702082;
+  }
+
+  .lt-intro {
+    font-size: 17px;
+    line-height: 1.7;
+    text-align: justify;
+    color: #5e1b70;
+  }
+
+  .lt-input-card,
+  .lt-preview,
+  .lt-result {
+    margin-top: 22px;
+    background: rgba(255,255,255,.94);
+    border-radius: 24px;
+    padding: 22px;
+    box-shadow: 0 8px 25px rgba(112,32,130,.12);
+  }
+
+  #limitToolApp label {
+    display: block;
+    font-weight: bold;
+    color: #702082;
+    margin-bottom: 8px;
+    font-size: 16px;
+  }
+
+  #limitToolApp math-field {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 58px;
+    margin-bottom: 18px;
+    padding: 12px;
+    border-radius: 16px;
+    border: 2px solid #d7a7ec;
+    background: #ffffff;
+    font-size: 22px;
+    color: #3b1247;
+  }
+
+  .lt-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  #limitToolApp button {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #702082, #9b4ab3);
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 10px 22px rgba(112,32,130,.25);
+  }
+
+  .lt-secondary {
+    background: linear-gradient(135deg, #f3e5ff, #ffffff);
+    color: #702082;
+    border: 1px solid #d7a7ec;
+  }
+
+  .lt-preview,
+  .lt-result {
+    color: #3b1247;
+    font-size: 20px;
+    line-height: 1.8;
+    text-align: center;
+    overflow-x: auto;
+  }
+
+  .lt-title {
+    font-weight: bold;
+    color: #702082;
+    margin: 18px 0 10px;
+  }
+
+  .lt-ok {
+    margin-top: 18px;
+    padding: 16px;
+    border-radius: 18px;
+    background: #f3e5ff;
+    color: #702082;
+    font-weight: bold;
+    border: 1px solid #d7a7ec;
+    line-height: 1.7;
+  }
+
+  .lt-danger {
+    margin-top: 18px;
+    padding: 16px;
+    border-radius: 18px;
+    background: #ffecec;
+    color: #970000;
+    font-weight: bold;
+    border: 1px solid #ffb6b6;
+    line-height: 1.7;
+  }
+
+  .lt-warning {
+    margin-top: 18px;
+    padding: 16px;
+    border-radius: 18px;
+    background: #fff3cd;
+    color: #856404;
+    font-weight: bold;
+    border: 1px solid #ffe08a;
+    line-height: 1.7;
+  }
+
+  /* Compatibilidad móvil / Safari */
+  #limitToolApp,
+  #limitToolApp * {
+    box-sizing: border-box;
+  }
+
+  #limitToolApp {
+    width: min(100%, 980px);
+    min-width: 0;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  #limitToolApp button {
+    min-height: 48px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  #limitToolApp math-field {
+    display: block;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: manipulation;
+  }
+
+  #limitToolApp .lt-preview,
+  #limitToolApp .lt-result {
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #limitToolApp .lt-preview mjx-container[display="true"],
+  #limitToolApp .lt-result mjx-container[display="true"] {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 4px 0 8px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  @media (pointer: coarse) {
+    #limitToolApp math-field::part(virtual-keyboard-toggle) {
+      display: flex;
+    }
+  }
+
+  @media not (pointer: coarse) {
+    #limitToolApp math-field::part(virtual-keyboard-toggle) {
+      display: none;
+    }
+  }
+
+  @media (max-width: 650px) {
+    body {
+      margin: 0;
+    }
+
+    .lt-wrapper {
+      width: 100%;
+      margin: 0 auto;
+      padding:
+        max(12px, env(safe-area-inset-top))
+        max(12px, env(safe-area-inset-right))
+        max(18px, env(safe-area-inset-bottom))
+        max(12px, env(safe-area-inset-left));
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    .lt-card {
+      padding: 16px;
+      border-radius: 22px;
+    }
+
+    .lt-card h2 {
+      font-size: clamp(22px, 7vw, 28px);
+      line-height: 1.2;
+    }
+
+    .lt-intro {
+      font-size: 16px;
+      line-height: 1.6;
+      text-align: left;
+    }
+
+    .lt-input-card,
+    .lt-preview,
+    .lt-result {
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: 18px;
+    }
+
+    #limitToolApp math-field {
+      min-height: 56px;
+      padding: 10px;
+      font-size: 20px;
+      margin-bottom: 16px;
+    }
+
+    .lt-buttons {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    #limitToolApp button {
+      padding: 14px 12px;
+      font-size: 17px;
+      border-radius: 16px;
+    }
+
+    .lt-preview,
+    .lt-result {
+      font-size: 18px;
+      line-height: 1.65;
+    }
+
+    .lt-ok,
+    .lt-danger,
+    .lt-warning {
+      padding: 14px;
+      font-size: 16px;
+      line-height: 1.55;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .lt-card { padding: 12px; }
+    .lt-input-card, .lt-preview, .lt-result { padding: 12px; }
+    #limitToolApp math-field { font-size: 18px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #limitToolApp *,
+    #limitToolApp *::before,
+    #limitToolApp *::after {
+      scroll-behavior: auto !important;
+    }
+  }
+</style>
+
+<script>
+window.MathJax = {
+  loader: {
+    load: ['[tex]/bbox', '[tex]/color']
+  },
+  tex: {
+    packages: {'[+]': ['bbox', 'color']},
+    inlineMath: [['\\(', '\\)']],
+    displayMath: [['\\[', '\\]']]
+  },
+  svg: {
+    fontCache: 'global'
+  }
+};
+</script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathlive"></script>
+
+<script type="module">
+
+  import { ComputeEngine } from "https://unpkg.com/@cortex-js/compute-engine?module";
+
+  const ce = new ComputeEngine();
+
+  function ltGetLatex(id) {
+    const field = document.getElementById(id);
+    return field.getValue("latex").trim();
+  }
+
+  function ltNormalizeLatex(latex) {
+    return String(latex)
+      .replace(/\\left/g, "")
+      .replace(/\\right/g, "")
+      .replace(/\\,/g, "")
+      .replace(/\\;/g, "")
+      .replace(/\\!/g, "")
+      .trim();
+  }
+
+  function ltParse(latex) {
+    return ce.parse(ltNormalizeLatex(latex));
+  }
+
+  function ltExtractGroup(text, start) {
+    if (text[start] !== "{") return null;
+
+    let level = 0;
+    let content = "";
+
+    for (let i = start; i < text.length; i++) {
+      const c = text[i];
+
+      if (c === "{") {
+        level++;
+        if (level > 1) content += c;
+      } else if (c === "}") {
+        level--;
+        if (level === 0) {
+          return { content: content, end: i };
+        } else {
+          content += c;
+        }
+      } else {
+        content += c;
+      }
+    }
+
+    return null;
+  }
+
+  function ltToNumber(latex) {
+    const expr = ltParse(latex);
+    const value = expr.N().valueOf();
+
+    if (typeof value === "number" && !Number.isNaN(value)) {
+      return value;
+    }
+
+    const n = Number(value);
+
+    if (!Number.isNaN(n)) {
+      return n;
+    }
+
+    throw new Error("Valor no numérico");
+  }
+
+  function ltBoxedValue(valueLatex) {
+    return "\\bbox[5px,border:1px solid #702082,#F3E5FF]{\\color{#702082}{\\left(" + valueLatex + "\\right)}}";
+  }
+
+  function ltHighlightSubstitution(functionLatex, valueLatex) {
+    const latex = ltNormalizeLatex(functionLatex);
+    const box = ltBoxedValue(valueLatex);
+
+    let output = "";
+
+    for (let i = 0; i < latex.length; i++) {
+
+      if (latex[i] === "\\") {
+        let command = "\\";
+        i++;
+
+        while (i < latex.length && /[a-zA-Z]/.test(latex[i])) {
+          command += latex[i];
+          i++;
+        }
+
+        i--;
+        output += command;
+        continue;
+      }
+
+      if (latex[i] === "x") {
+        output += box;
+      } else {
+        output += latex[i];
+      }
+    }
+
+    return output;
+  }
+
+  function ltSubstituteExpression(functionLatex, valueLatex) {
+    const parsed = ltParse(functionLatex);
+    const valueExpr = ltParse(valueLatex);
+
+    return parsed.subs({ x: valueExpr }).simplify();
+  }
+
+  function ltExactLatex(expr) {
+    try {
+      const latex = expr.latex;
+
+      if (!latex || String(latex).includes("NaN")) {
+        return null;
+      }
+
+      return latex;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function ltApprox(expr) {
+    try {
+      const value = expr.N().valueOf();
+
+      if (value === Infinity || value === -Infinity) {
+        return null;
+      }
+
+      if (Number.isNaN(Number(value))) {
+        return null;
+      }
+
+      if (typeof value === "number") {
+        if (!Number.isFinite(value)) return null;
+
+        return Number.isInteger(value)
+          ? String(value)
+          : String(Math.round(value * 1000000) / 1000000);
+      }
+
+      const text = String(value);
+
+      if (
+        text.includes("NaN") ||
+        text.includes("Infinity") ||
+        text.includes("Undefined") ||
+        text.includes("undefined")
+      ) {
+        return null;
+      }
+
+      return text;
+
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function ltDetectWarnings(functionLatex, valueLatex, substitutedExpr) {
+    const warnings = [];
+    const original = ltNormalizeLatex(functionLatex);
+
+    const fracRegex = /\\frac\s*\{/g;
+    let match;
+
+    while ((match = fracRegex.exec(original)) !== null) {
+      const startNum = original.indexOf("{", match.index + 5);
+      const num = ltExtractGroup(original, startNum);
+
+      if (!num) continue;
+
+      const startDen = original.indexOf("{", num.end + 1);
+      const den = ltExtractGroup(original, startDen);
+
+      if (!den) continue;
+
+      try {
+        const valueExpr = ltParse(valueLatex);
+
+        const n = ltParse(num.content).subs({ x: valueExpr }).N().valueOf();
+        const d = ltParse(den.content).subs({ x: valueExpr }).N().valueOf();
+
+        const numeratorIsZero = Number(n) === 0;
+        const denominatorIsZero = Number(d) === 0;
+
+        if (numeratorIsZero && denominatorIsZero) {
+          warnings.push("indeterminada");
+        } else if (!numeratorIsZero && denominatorIsZero) {
+          warnings.push("denominador");
+        }
+
+      } catch(e) {}
+
+      fracRegex.lastIndex = den.end + 1;
+    }
+
+    const sqrtRegex = /\\sqrt\s*\[/g;
+
+    while ((match = sqrtRegex.exec(original)) !== null) {
+      const closeIndex = original.indexOf("]", match.index);
+
+      if (closeIndex === -1) continue;
+
+      const indexLatex = original.substring(match.index + 6, closeIndex);
+      const groupStart = original.indexOf("{", closeIndex);
+      const rad = ltExtractGroup(original, groupStart);
+
+      if (!rad) continue;
+
+      try {
+        const indexNumber = ltToNumber(indexLatex);
+        const radValue = ltParse(rad.content).subs({ x: ltParse(valueLatex) }).N().valueOf();
+
+        if (Number.isInteger(indexNumber) && indexNumber % 2 === 0 && Number(radValue) < 0) {
+          warnings.push("raiz");
+        }
+
+      } catch(e) {}
+
+      sqrtRegex.lastIndex = rad.end + 1;
+    }
+
+    ["\\ln", "\\log"].forEach(cmd => {
+      let pos = 0;
+
+      while ((pos = original.indexOf(cmd, pos)) !== -1) {
+        const groupStart = original.indexOf("{", pos + cmd.length);
+
+        if (groupStart !== -1) {
+          const arg = ltExtractGroup(original, groupStart);
+
+          if (arg) {
+            try {
+              const argValue = ltParse(arg.content).subs({ x: ltParse(valueLatex) }).N().valueOf();
+
+              if (Number(argValue) <= 0) {
+                warnings.push("log");
+              }
+
+            } catch(e) {}
+
+            pos = arg.end + 1;
+          } else {
+            pos += cmd.length;
+          }
+
+        } else {
+          pos += cmd.length;
+        }
+      }
+    });
+
+    try {
+      const approx = substitutedExpr.N().valueOf();
+      const approxText = String(approx);
+
+      if (approx === Infinity || approx === -Infinity || approxText.includes("Infinity")) {
+        warnings.push("infinito");
+      }
+
+      if (Number.isNaN(Number(approx)) || approxText.includes("NaN")) {
+        warnings.push("nan");
+      }
+
+      if (approxText.includes("Complex") || approxText.includes("i")) {
+        warnings.push("complejo");
+      }
+
+    } catch(e) {
+      warnings.push("nan");
+    }
+
+    return [...new Set(warnings)];
+  }
+
+  function ltWarningBlock(warnings, exactLatex) {
+
+    if (!warnings.length) {
+      return `
+        <div class="lt-ok">
+          ✅ La sustitución directa es válida.
+
+          <br><br>
+
+          No se detectaron indeterminaciones ni restricciones dentro de los números reales.
+
+          <br><br>
+
+          Por lo tanto,
+
+          \\[
+          \\displaystyle
+          \\lim_{x \\to a} f(x) = ${exactLatex}
+          \\]
+        </div>
+      `;
+    }
+
+    let html = "";
+
+    if (warnings.includes("indeterminada")) {
+      html += `
+        <div class="lt-danger">
+          ⚠️ La sustitución directa produce la forma indeterminada
+
+          \\[
+          \\displaystyle
+          \\frac{0}{0}
+          \\]
+
+          Por lo tanto, no es posible determinar el límite mediante sustitución directa.
+
+          <br><br>
+
+          Se requiere una técnica adicional de análisis.
+        </div>
+      `;
+    }
+
+    if (warnings.includes("denominador")) {
+      html += `
+        <div class="lt-danger">
+          ⚠️ La sustitución directa produce una división entre cero.
+
+          \\[
+          \\displaystyle
+          \\frac{a}{0}
+          \\]
+
+          Debido a que el denominador se anula y el numerador es distinto de cero, el límite no existe como número real finito.
+        </div>
+      `;
+    }
+
+    if (warnings.includes("raiz")) {
+      html += `
+        <div class="lt-danger">
+          ⚠️ La sustitución directa genera una raíz de índice par con radicando negativo.
+
+          <br><br>
+
+          La expresión obtenida no pertenece al conjunto de los números reales.
+        </div>
+      `;
+    }
+
+    if (warnings.includes("log")) {
+      html += `
+        <div class="lt-danger">
+          ⚠️ La sustitución directa produce un argumento no válido para el logaritmo.
+
+          <br><br>
+
+          Recordemos que
+
+          \\[
+          \\displaystyle
+          \\log(x)
+          \\]
+
+          solamente está definido para
+
+          \\[
+          \\displaystyle
+          x>0
+          \\]
+
+          dentro de los números reales.
+        </div>
+      `;
+    }
+
+    if (warnings.includes("infinito")) {
+      html += `
+        <div class="lt-warning">
+          ⚠️ La sustitución directa sugiere un crecimiento sin límite.
+
+          \\[
+          \\displaystyle
+          |f(x)| \\to \\infty
+          \\]
+
+          El resultado no corresponde a un número real finito.
+        </div>
+      `;
+    }
+
+    if (warnings.includes("complejo")) {
+      html += `
+        <div class="lt-warning">
+          ⚠️ La sustitución directa produce un resultado que involucra números complejos.
+
+          <br><br>
+
+          La expresión obtenida no pertenece al conjunto de los números reales.
+        </div>
+      `;
+    }
+
+    if (warnings.includes("nan") && !warnings.includes("indeterminada")) {
+      html += `
+        <div class="lt-danger">
+          ⚠️ La sustitución directa produce una expresión no definida.
+
+          <br><br>
+
+          No es posible obtener un valor numérico mediante sustitución directa.
+        </div>
+      `;
+    }
+
+    return html;
+  }
+
+
+  function ltRenderMath(container) {
+    if (window.MathJax && MathJax.typesetPromise) {
+      MathJax.typesetClear([container]);
+      MathJax.typesetPromise([container]);
+    }
+  }
+
+  function ltRenderPreview() {
+    const preview = document.getElementById("ltPreview");
+
+    let f = ltGetLatex("ltFunction");
+    let a = ltGetLatex("ltValue");
+
+    if (!f || !a) {
+      preview.innerHTML = "Vista previa pendiente.";
+      return;
+    }
+
+    preview.innerHTML = `
+      <div class="lt-title">Vista previa</div>
+
+      \\[
+      \\displaystyle
+      \\lim_{x \\to ${a}} ${f}
+      \\]
+    `;
+
+    ltRenderMath(preview);
+  }
+
+  window.ltCalculate = function() {
+    const result = document.getElementById("ltResult");
+
+    let f = ltGetLatex("ltFunction");
+    let a = ltGetLatex("ltValue");
+
+    if (!f || !a) {
+      result.innerHTML = `<div class="lt-danger">Ingresá la función y el valor al que tiende \\(x\\).</div>`;
+      ltRenderMath(result);
+      return;
+    }
+
+    let substitutedExpr;
+
+    try {
+      substitutedExpr = ltSubstituteExpression(f, a);
+    } catch(e) {
+      result.innerHTML = `<div class="lt-danger">No se pudo interpretar la función o el valor indicado.</div>`;
+      return;
+    }
+
+    const highlighted = ltHighlightSubstitution(f, a);
+    const warnings = ltDetectWarnings(f, a, substitutedExpr);
+
+    const exactLatexRaw = ltExactLatex(substitutedExpr);
+    const approxRaw = ltApprox(substitutedExpr);
+
+    const hideExact =
+      warnings.includes("indeterminada") ||
+      warnings.includes("denominador") ||
+      warnings.includes("nan") ||
+      warnings.includes("infinito");
+
+    const hideApprox =
+      warnings.includes("indeterminada") ||
+      warnings.includes("denominador") ||
+      warnings.includes("nan") ||
+      warnings.includes("infinito") ||
+      approxRaw === null;
+
+    const exactBlock = !hideExact && exactLatexRaw !== null ? `
+      <div class="lt-title">Expresión obtenida</div>
+
+      \\[
+      \\displaystyle
+      = ${exactLatexRaw}
+      \\]
+    ` : "";
+
+    const approxBlock = !hideApprox ? `
+      <div class="lt-title">Aproximación decimal</div>
+
+      \\[
+      \\displaystyle
+      \\approx ${approxRaw}
+      \\]
+    ` : "";
+
+    result.innerHTML = `
+      <div class="lt-title">Límite planteado</div>
+
+      \\[
+      \\displaystyle
+      \\lim_{x \\to ${a}} ${f}
+      \\]
+
+      <div class="lt-title">Sustitución directa</div>
+
+      \\[
+      \\displaystyle
+      = ${highlighted}
+      \\]
+
+      ${exactBlock}
+
+      ${approxBlock}
+
+      ${ltWarningBlock(warnings, exactLatexRaw || "")}
+    `;
+
+    ltRenderMath(result);
+  };
+
+  window.ltClear = function() {
+    document.getElementById("ltFunction").setValue("");
+    document.getElementById("ltValue").setValue("");
+    document.getElementById("ltPreview").innerHTML = "Vista previa pendiente.";
+    document.getElementById("ltResult").innerHTML = "El resultado aparecerá aquí.";
+  };
+
+  function ltInit() {
+    const start = () => {
+      const f = document.getElementById("ltFunction");
+      const a = document.getElementById("ltValue");
+
+      if (!f || !a || f.dataset.ltReady === "1") return;
+
+      f.dataset.ltReady = "1";
+      a.dataset.ltReady = "1";
+
+      f.mathVirtualKeyboardPolicy = "auto";
+      a.mathVirtualKeyboardPolicy = "auto";
+
+      f.addEventListener("input", ltRenderPreview);
+      a.addEventListener("input", ltRenderPreview);
+
+      // En pantallas táctiles, mantiene el campo visible al abrir el teclado matemático.
+      if (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) {
+        [f, a].forEach((field) => {
+          field.addEventListener("focusin", () => {
+            setTimeout(() => {
+              field.scrollIntoView({ behavior: "smooth", block: "center" });
+            }, 180);
+          });
+        });
+      }
+
+      setTimeout(ltRenderPreview, 250);
+    };
+
+    if (window.customElements && customElements.whenDefined) {
+      customElements.whenDefined("math-field").then(start).catch(start);
+    } else {
+      start();
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", ltInit, { once: true });
+  } else {
+    ltInit();
+  }
+
+</script>
+</body>
+</html>
